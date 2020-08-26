@@ -1,0 +1,251 @@
+# include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
+
+typedef struct node
+{
+	char name[20];
+	char id[20];
+	char number[12];  //number used as (char) as Octal Conversion issue.
+	
+	struct node* prev;
+	struct node* next;	
+}node;
+
+FILE* file;
+node* getNewNode(char name[],char id[],char number[]);
+void push(char name[],char id[],char number[]);
+void popLastInsert();
+void popByName(char name[]);
+void search(char name[]);
+void print();
+void fileFunction();
+node* head = NULL;
+
+int main()
+{
+	/*if(file == fopen("contacts.txt","w"))
+		file = fopen("contacts.txt","a");
+	else file = fopen("contacts.txt","w");*/
+	
+	for(;;)
+	{
+		int choice;
+		printf("\nWhat You want to do.\n");
+		printf("1.Add New Contact.\n");
+		printf("2.To Delete Last Entered Contact.\n");
+		printf("3.Search a contact by his name.\n");
+		printf("4.To Delete a contact by Name.\n");
+		printf("5.To See the full contact list.\n");
+		printf("6.To See Contacts from saved file.\n");
+		printf("0.Exit The Program.\n\nEnter : ");
+		scanf("%d",&choice);
+		printf("\n");
+		
+		if(choice == 1)
+		{
+			int n;
+			int count = 1;
+			printf("\nHow Many Contacts You want To Add At a Time: ");
+			scanf("%d",&n);
+			for(int i=0;i<n;i++)
+			{
+				printf("No.%d Person's :\n",count);
+				char personName[20];
+				printf("Name : ");
+				scanf("\n");
+				fgets(personName,20,stdin);
+				
+				char personId[20];
+				printf("ID : ");
+				scanf("\n");
+				fgets(personId,20,stdin);
+				
+				
+				char personNumber[12];
+				printf("Number : ");
+				scanf("\n");
+				fgets(personNumber,12,stdin);
+				printf("\n");
+				push(personName,personId,personNumber);
+				count ++;
+			}
+		}
+		
+		if(choice == 2) popLastInsert();
+		
+		if(choice == 3)
+		{
+			char searchFor[20];
+			printf("Which Name are You Searching For : ");
+			scanf("\n");
+			fgets(searchFor,20,stdin);
+			search(searchFor);
+		}
+		
+		if(choice == 4)
+		{
+			char deleteFor[20];
+			printf("Which Named Contact you want to Delete : ");
+			scanf("\n");
+			fgets(deleteFor,20,stdin);
+			popByName(deleteFor);
+		}
+		
+		if (choice == 5) print();
+		
+		if (choice == 6) fileFunction();
+		
+		if(choice == 0) 
+		{	
+			printf("\n   >>Thank\vYou<<\n");
+			fclose(file);
+			break;
+		}
+		
+	}
+return 0;
+}
+
+
+node* getNewNode(char name[],char id[],char number[])
+{
+	file = fopen("contacts.txt","a");
+	node* temp;
+	temp = (node*)malloc(sizeof(node));
+	strncpy(temp->name,name,20);
+	strncpy(temp->id,id,20);
+	strncpy(temp->number,number,12);
+	temp->prev = NULL;
+	temp->next = NULL;
+	
+	fputs("Name : ",file);
+	fputs(temp->name,file);
+	
+	fputs("ID : ",file);
+	fputs(temp->id,file);
+	
+	fputs("Number : ",file);
+	fputs(temp->number,file);
+	fputs("\n",file);
+	
+	return temp;
+}
+
+
+void push(char name[],char id[],char number[])
+{
+	node* temp = getNewNode(name,id,number);
+	if(head == NULL)
+	{
+		head = temp;
+		return;
+	}
+	
+	node* anotherTemp = head;
+	head = temp;
+	temp->next = anotherTemp;
+	anotherTemp->prev = temp;
+}
+
+
+void popLastInsert()
+{
+	node* temp = head;
+	head = temp->next;
+	fputs(temp->name,file);
+	fputs("Get Trashed.\n",file);
+	fputs("\n",file);
+	free(temp);
+	printf("DELETED\n");
+}
+
+
+void popByName(char name[])
+{
+	node* temp = head;
+	if(strcmp(temp->name,name)==0)
+	{
+		head = temp->next;
+		fputs(temp->name,file);
+		fputs("Get Trashed\n",file);
+		fputs("\n",file);
+		free(temp);
+		printf("\n>>DELETED<<\n");
+		return;
+	}
+	
+	while(temp->next !=NULL)
+	{
+		if(strcmp(temp->name,name)==0)
+		{
+			temp->prev->next = temp->next;
+			temp->next->prev = temp->prev;
+			fputs(temp->name,file);
+			fputs("Get Trashed\n",file);
+			fputs("\n",file);
+			free(temp);
+			printf("\n>>DELETED<<\n");
+			return;
+		}
+		temp = temp->next;
+		if(temp->next== NULL)
+		{
+			temp->prev->next = NULL;
+			fputs(temp->name,file);
+			fputs("Get Trashed.\n",file);
+			fputs("\n",file);
+			free(temp);
+			printf("\n>>DELETED<<\n");
+		}
+	}
+}
+
+
+void search(char name[])
+{
+	printf("\n");
+	node* temp = head;
+	while(temp != NULL)
+	{
+		if(strcmp(temp->name,name) == 0)
+		{
+			printf(">>Search Found<<\n\n");
+			printf("Name : %s",temp->name);
+			printf("Id : %s",temp->id);
+			printf("Number : %s\n\n",temp->number);
+			return;
+		}
+		temp = temp->next;
+	}
+	printf("\n>>No Match Found<<\n");
+}
+
+
+void print()
+{
+	printf("\n");
+	if(head == NULL)
+	{
+		printf(">>The list is Empty<<\n\n");
+		return;
+	}
+	
+	node* temp = head;
+	while(temp !=NULL)
+	{
+		printf("Name : %s",temp->name);
+		printf("ID : %s",temp->id);
+		printf("Number : %s  \n\n",temp->number);
+		temp = temp->next;
+	}
+	printf("\n");
+}
+
+void fileFunction()
+{
+	printf("Go to Your Folder and there has a file named\n");
+	printf("'contacts.txt'.Open it.ALL given Contacts are Saved there\n");
+	printf("Before You Go to File Exit The program\n");
+			
+}
